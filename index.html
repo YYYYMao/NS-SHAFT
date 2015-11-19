@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html >
+<head>
+<meta charset="UTF-8">
+	<title>小朋友下樓梯</title>
+	<link rel="shortcut icon" href="img/00.png">
+</head>
+<body>
+	
+	<canvas id="ss"></canvas>
+	<canvas id="gg" ></canvas>
+	<a  id = "aa" href="http://info.flagcounter.com/8XJZ"><img src="http://s11.flagcounter.com/mini/8XJZ/bg_FFFFFF/txt_000000/border_CCCCCC/flags_0/" alt="Flag Counter" border="0"></a>
+	
+<script type="text/javascript">
+
+		var canvas = document.getElementById('ss');
+		var ctx = canvas.getContext('2d');
+		var canvas2 = document.getElementById('gg');
+		var ctx2 = canvas2.getContext('2d');
+		var speed = 7; 
+		var up = 0,up2=0;
+		var down = 1,down2 = 1;
+		var m_y = 0,m_y2 = 0,flag3 = 0;
+		var start = 1;
+		var end = 0;
+		var game = 0;
+		var stair= 0;
+		var mouse = 0;
+		var ms = 250;
+		var fulllife = 12;
+		var a = 0 ,b = 0,r = 0;
+		var c = 0,win = 0,ddd= 0;eee=0;
+		var touches;
+		var tou = 0;
+		canvas.width = 480;
+		canvas.height = 740;
+		canvas2.width = 480;
+		canvas2.height = 300;
+		var blockpic=new Image();
+		blockpic.src="img/block.jpg";
+		var bgpic=new Image();
+		bgpic.src="img/bg.jpg";
+		var toppic=new Image();
+		toppic.src="img/top.jpg";
+		var jpic=new Image();
+		jpic.src="img/jblock2.png";
+		var kpic=new Image();
+		kpic.src="img/kpic.jpg";
+		var spic=new Image();
+		spic.src="img/spic.jpg";
+		var QQpic=new Image();
+		QQpic.src="img/QQ.jpg";
+		var stand=new Image();
+		stand.src="img/1.png";
+		var leftpic=new Image();
+		leftpic.src="img/left.png";
+		var rightpic=new Image();
+		rightpic.src="img/right.png";
+		var pic=new Image();
+		pic.src="img/00.png";
+		var st=new Image();
+		st.src="img/start2.jpg";
+		var st2=new Image();
+		st2.src="img/mouse1.png";
+		var st3=new Image();
+		st3.src="img/start3.jpg";
+		var ww=new Image();
+		ww.src="img/main.png";
+		var stand2=new Image();
+		stand2.src="img/stand2.png";
+		var leftpic2=new Image();
+		leftpic2.src="img/left2.png";
+		var rightpic2=new Image();
+		rightpic2.src="img/right2.png";
+		var man = {
+			x: 200,
+			y: 300,
+			width: 40,
+			height: 40,
+			speed: 200,
+			life:fulllife,
+			stair:0,
+			state:0,
+			color: '#FF8000'
+		};
+		var man2 = {
+				x: 250,
+				y: 300,
+				width: 40,
+				height: 40,
+				speed: 200,
+				life:fulllife,
+				stair:0,
+				state:0,
+				color: '#FF8000'
+			};
+		function block(a,b){
+			this.x= a;
+			this.y= b;
+			this.width= 150;
+			this.height= 30;
+			this.mod = 0;
+			this.color = '#198e99';
+		};
+		function s_block(a,b){
+			this.x= a;
+			this.y= b;
+			this.width= 150;
+			this.height= 30;
+			this.mod = 1;
+			this.color = '#52f705';
+		};
+		function k_block(a,b){
+			this.x= a;
+			this.y= b;
+			this.width= 150;
+			this.height= 30;
+			this.mod = 2;
+			this.color = '#f70519';
+		};
+		function j_block(a,b){
+			this.x= a;
+			this.y= b;
+			this.width= 150;
+			this.height= 30;
+			this.mod = 3;
+			this.color = '#FFFF00';
+		};
+		var Array = [];
+		Array[0] = new block(150,600);
+		for( i = 1 ; i < 10 ; i++){
+			var r = Math.random() * canvas.width-100;
+			var de = (Math.random() * 10+10+i*4)*40 ;
+			/// Avoid Overlapping
+			while(1)
+			{
+				r = Math.random() * canvas.width-100;
+				de = (Math.random() * 10+10+i*4)*40 ;
+				var overlap = false;
+				for(j = 0 ; j < i ; j++)
+				{
+					if(i==j) continue;
+					if( (Math.abs(r-Array[j].x)<=200) && (Math.abs(de-Array[j].y)<=60)  )
+					{
+						overlap = true;
+						//console.log("overlap!");
+						break;
+					}
+				}
+				if(!overlap) break;
+			}
+			/////////////////////////////////////
+			if(i == 3 || i == 9 ) Array[i] = new s_block(r,de);
+			else if ( i == 2 || i == 7) Array[i] = new k_block(r,de);
+			else if ( i == 5 ) Array[i] = new j_block(r,de);
+			else Array[i] = new block(r,de);
+		}
+		var keysDown = {};
+		window.addEventListener('keydown', function(e) {
+			keysDown[e.keyCode] = true;
+		});
+		window.addEventListener('keyup', function(e) {
+			delete keysDown[e.keyCode];
+		});
+		///// Move by Mouse
+		canvas.addEventListener('mousemove', mousemoveandler, false);
+		canvas.addEventListener('mousedown', mousedown, false);
+		/////move by touch
+		canvas.addEventListener("touchstart", function (e) {
+                touches = e.touches[0];
+				tou = 1;
+            });
+		canvas.addEventListener("touchmove", function (e) {
+                var t = e.touches[0];
+				if (t.pageX < touches.pageX && man.x > 0 && man.x < 560) {
+					man.x -= man.speed * 0.015;
+					man.state = 1;
+					if(man.x <= 0) man.x = 1;
+				}
+				else if (t.pageX > touches.pageX && man.x > 0 && man.x < 560) {
+					man.x += man.speed * 0.015;
+					man.state = 2;
+					if(man.x >= 560) man.x = canvas.width-41;
+				}else man.state = 0;
+				//alert(touches.pageX);
+            });	
+		function mousemoveandler(e) {
+				var x = e.clientX;
+				if (x < man.x && man.x > 0 && man.x < 560 &&mouse == 1) {
+					man.x -= man.speed * 0.01;
+					man.state = 1;
+					if(man.x <= 0) man.x = 1;
+				}
+				else if (x > man.x && man.x > 0 && man.x < 560&&mouse == 1) {
+					man.x += man.speed * 0.01;
+					man.state = 2;
+					if(man.x >= 560) man.x = canvas.width-41;
+				}else man.state = 0;
+		}
+		function mousedown(e) {
+			var x = e.clientX;
+			var y = e.clientY;
+			if (game == 0  && start == 1 &&x > 65 && x < 230 && y>500 &&y<560 &&start ==1 ) {//key
+				start = 2;
+				mouse = 0;
+				end = 0;
+				game = 0;
+				
+		    }else if (game == 0  && start == 1 &&x > 285 && x < 450 && y>500 &&y<560 &&start ==1 ) {//mouse
+				start = 2;
+				end = 0;
+				game = 0;
+	
+				mouse = 1;
+			}else if (game == 0  && start == 1 &&x > 140 && x < 360 && y>600 &&y<665 &&start ==1 ) {//2p
+			start = 2;
+			end = 0;
+			game = 2;
+
+			mouse = 0;
+			}
+			else if (end == 1 && (game == 0 || game == 2 )&& x > 140 && x < 360 && y>520 &&y<580) { //restart
+				end = 0;
+				game = 0;
+				start = 1;
+				man.speed = 250;
+				speed = 5;
+				man.x= 200;
+				man.y= 300;
+				man2.x= 250;
+				man2.y= 300;
+				man.life=fulllife;
+				man2.life=fulllife;
+				man.stair=0;
+				man.state=0;
+				stair  =0;
+				mouse = 0;
+				flag3 =0;
+				player =0;
+				win =0;
+				
+			}
+			
+	}
+		function update(mod) {
+			if(game == 1){
+			if (37 in keysDown && man.x >= 0 && man.x < (canvas.width-40) ) {
+				man.x -= man.speed * mod;
+				man.state = 1;
+				if(man.x <= 0) man.x = 1;
+			}
+			else if (39 in keysDown && man.x >= 0 && man.x < (canvas.width-40)) {
+				man.x += man.speed * mod;
+				man.state = 2;
+				if(man.x >= (canvas.width-40) ) man.x = canvas.width-41;
+			}else if(mouse == 0 && tou == 0)man.state = 0;
+			for(i = 0 ; i < 10; i++){
+				Array[i].y -= speed;
+			}
+            for( i = 0 ; i < 10 ; i++){
+				if((man.y <= Array[i].y  &&man.y >= Array[i].y -40 )&& man.x >Array[i].x-20 && man.x < Array[i].x +150){
+					up =1;
+					m_y = i;
+					break;
+				}
+				else up = 0;
+            }	
+            if(up == 1){
+				man.y = Array[m_y].y-40;
+				if(Array[m_y].mod == 1) {
+					if(flag == 0 &&man.life< fulllife ) man.life++;
+					flag = 1;
+					man.speed=ms/3;
+				}else if (Array[m_y].mod == 2){
+					if(flag == 0)man.life -= 5;
+					flag = 1;
+					man.speed = ms;
+				}else if(Array[m_y].mod == 3){
+					if(flag == 0 &&man.life< fulllife ) man.life++;
+					man.speed = ms*1.5;
+					man.y -= 100;
+					flag = 1;
+				}
+				else {
+					if(flag == 0 &&man.life< fulllife ) man.life++;
+					man.speed =ms;
+					flag = 1;
+				}
+			}	
+			else  {
+				if( man.y<35 )
+				{
+					man.life -= 5;
+					man.y = 35;
+				}
+				man.y += 10;
+				man.speed =ms;
+				flag = 0;
+			}
+			if(man.y > canvas.height || man.life <=0) {
+				game = 0;
+				end = 1;
+			}
+			//console.log(flag+"  "+man.life + "   " + man.speed);
+			if(man.stair > 95) speed = 15;
+			else if(man.stair > 80) speed = 14;
+			else if(man.stair > 65) speed = 12;
+			else if(man.stair > 50) speed = 10;
+			else if(man.stair > 35) speed = 9;
+			else if(man.stair > 20) speed = 8;
+            for(i = 0 ; i < 10 ; i++){
+				if( Array[i].y <= 30 ){
+					Array[i].y = canvas.height + (Math.random()*10+1)*(Math.random()*50+50) + 200;
+					Array[i].x = Math.random() * canvas.width-100;
+					/// Avoid Overlapping
+					while(1)
+					{
+						Array[i].y = canvas.height + (Math.random()*10+1)*(Math.random()*50+50) + 200;
+						Array[i].x = Math.random() * canvas.width-100;
+						var overlap = false;
+						for(j = 0 ; j < 10 ; j++)
+						{
+							if( i==j ) continue;
+							if( (Math.abs(Array[i].x-Array[j].x)<=200) && (Math.abs(Array[i].y-Array[j].y)<=60)  )
+							{
+								overlap = true;
+								//console.log("overlap!");
+								break;
+							}
+						}
+						//console.log(overlap);
+						if(!overlap) break;
+					}
+					/////////////////////////////////////
+				}	
+			}
+			}
+			else if(game == 2 && start == 0){
+				if (37 in keysDown && man.x >= 0 && man.x <= (canvas.width-40)) {
+					man.x -= man.speed * mod;
+					man.state = 1;
+					if(man.x <= 0) man.x = 1;
+					player = 1;
+				}
+				else if (39 in keysDown && man.x >= 0 && man.x <= (canvas.width-40)) {
+					man.x += man.speed * mod;
+					man.state = 2;
+					player = 1;
+					if(man.x >= (canvas.width-40) ) man.x = canvas.width-41;
+				}else man.state = 0;
+				if (90 in keysDown && man2.x >= 0 && man2.x <= (canvas.width-40)) {
+					man2.x -= man2.speed * mod;
+					player = 2;
+					man2.state = 1;
+					if(man2.x <= 0) man2.x = 1;
+				}
+				else if (88 in keysDown && man2.x >= 0 && man2.x <= (canvas.width-40)) {
+					man2.x += man2.speed * mod;
+					player = 2;
+					man2.state = 2;
+					if(man2.x >= (canvas.width-40) ) man2.x = canvas.width-41;
+				}else man2.state = 0;
+				
+				for(i = 0 ; i < 10; i++){
+					Array[i].y -= speed;
+				}
+	            for( i = 0 ; i < 10 ; i++){
+					if((man.y <= Array[i].y  &&man.y >= Array[i].y -40 )&& man.x >Array[i].x-20 && man.x < Array[i].x +150){
+						up =1;
+						m_y = i;
+						break;
+					}
+					else up = 0;
+	            }
+	            for( i = 0 ; i < 10 ; i++){
+					if((man2.y <= Array[i].y  &&man2.y >= Array[i].y -40 )&& man2.x >Array[i].x-20 && man2.x < Array[i].x +150){
+						up2 =1;
+						m_y2 = i;
+						break;
+					}
+					else up2 = 0;
+	            }
+	            if(up == 1){
+					man.y = Array[m_y].y-40;
+					if(Array[m_y].mod == 1) {
+						if(flag == 0 &&man.life< fulllife ) man.life++;
+						flag = 1;
+						man.speed=ms/3;
+					}else if (Array[m_y].mod == 2){
+						if(flag == 0)man.life -= 5;
+						flag = 1;
+						man.speed = ms;
+					}else if(Array[m_y].mod == 3){
+						if(flag == 0 &&man.life< fulllife ) man.life++;
+						man.speed = ms*1.5;
+						man.y -= 100;
+						flag = 1;
+					}
+					else {
+						if(flag == 0 &&man.life< fulllife ) man.life++;
+						man.speed =ms;
+						flag = 1;
+					}
+				}	
+				else  {
+					if( man.y<35 )
+					{
+						man.life -= 5;
+						man.y = 35;
+					}
+					man.y += 10;
+					man.speed =ms;
+					flag = 0;
+				}
+				if(up2 == 1){
+					man2.y = Array[m_y2].y-40;
+					if(Array[m_y2].mod == 1) {
+						if(flag2 == 0 &&man2.life< fulllife ) man2.life++;
+						flag2 = 1;
+						man2.speed=ms/3;
+					}else if (Array[m_y2].mod == 2){
+						if(flag2 == 0)man2.life -= 5;
+						flag2 = 1;
+						man2.speed = ms;
+					}else if(Array[m_y2].mod == 3){
+						if(flag2 == 0 &&man2.life< fulllife ) man2.life++;
+						man2.speed = ms*1.5;
+						man2.y -= 100;
+						flag2 = 1;
+					}
+					else {
+						if(flag2 == 0 &&man2.life< fulllife ) man2.life++;
+						man2.speed =ms;
+						flag2 = 1;
+					}
+				}	
+				else  {
+					if( man2.y<35 )
+					{
+						man2.life -= 5;
+						man2.y = 35;
+					}
+					man2.y += 10;
+					man2.speed =ms;
+					flag2 = 0;
+				}
+				if((man.y > canvas.height || man.life <=0 )&&flag3 == 0) {
+					game = 2;
+					end = 1;
+					win = 2;
+					flag3 = 1;
+				}
+				else if((man2.y > canvas.height || man2.life <=0)&&flag3 == 0 ) {
+					game = 2;
+					end = 1;
+					win = 1;
+					flag3 = 1;
+				}
+				// man affected man2's position
+			        if( (man2.x<man.x && (man2.x+40)>man.x) 
+							 &&	(Math.abs(man2.y-man.y)<40 )  && player == 2)
+					{
+						man.x = man2.x + 40;
+						if( (man.x+40) > canvas.width ) 
+							man.x = canvas.width - 40;
+					}else if( (man2.x>man.x && man2.x<(man.x+40) &&player == 2) 
+							 &&	(Math.abs(man2.y-man.y)<40 ) )
+					{	
+							man.x = man2.x - 40;
+							if( man.x < 0  ) 
+								man.x = 0;	
+					}
+			     // man2 affected man1's position
+					if( (man.x<man2.x && (man.x+40)>man2.x &&player == 1) 
+					 &&	(Math.abs(man.y-man2.y)<40 ) )
+					{
+						man2.x = man.x + 40;
+						if( (man2.x+40) > canvas.width ) 
+							man2.x = canvas.width - 40;
+					}else if( (man.x>man2.x && man.x<(man2.x+40) &&player == 1) 
+					 &&	(Math.abs(man.y-man2.y)<40 ) )
+					{ 
+						man2.x = man.x - 40;
+						if( man2.x < 0  ) 
+							man2.x = 0;
+					}
+					//console.log(win);
+					// Vertical
+					/*if( (man.y<man2.y && (man.y+30)>man2.y) 
+					 &&	(Math.abs(man.x-man2.x)<30 ) )
+					{
+						if(up2==0)
+							man.y = man2.y - 30;
+						else
+							man2.y = man.y + 30;
+					}else if( (man.y>man2.y && man.y<(man2.y+30) ) 
+					 &&	(Math.abs(man.y-man2.y)<30 ) )
+					{
+						if(up==0)
+							man2.y = man.y - 30;
+						else 
+							man.y = man2.y + 30;
+					}*/	
+				//console.log(flag+"  "+man.life + "   " + man.speed);
+				if(man.stair > 95) speed = 15;
+				else if(man.stair > 80) speed = 14;
+				else if(man.stair > 65) speed = 12;
+				else if(man.stair > 50) speed = 10;
+				else if(man.stair > 35) speed = 9;
+				else if(man.stair > 20) speed = 8;
+	            for(i = 0 ; i < 10 ; i++){
+					if( Array[i].y <= 30 ){
+						Array[i].y = canvas.height + (Math.random()*10+1)*(Math.random()*50+50) + 200;
+						Array[i].x = Math.random() * canvas.width-100;
+						/// Avoid Overlapping
+						while(1)
+						{
+							Array[i].y = canvas.height + (Math.random()*10+1)*(Math.random()*50+50) + 200;
+							Array[i].x = Math.random() * canvas.width-100;
+							var overlap = false;
+							for(j = 0 ; j < 10 ; j++)
+							{
+								if( i==j ) continue;
+								if( (Math.abs(Array[i].x-Array[j].x)<=200) && (Math.abs(Array[i].y-Array[j].y)<=60)  )
+								{
+									overlap = true;
+									break;
+								}
+							}
+							if(!overlap) break;
+						}
+						/////////////////////////////////////
+					}	
+				}
+				}
+		}
+		function render() {
+			if(game ==1 ){
+				//ctx.fillStyle = '#000';
+				//ctx.fillRect(0, 0, canvas.width, canvas.height);
+				ctx.drawImage(bgpic,0,0,canvas.width,canvas.height);
+				if(man.state == 0 ) ctx.drawImage(stand,man.x,man.y,man.width,man.height);
+				else if(man.state == 1){
+					ctx.drawImage(leftpic,a,0,man.width,man.height,man.x,man.y,man.width,man.height);
+					a+=50;
+					if(a >= 200) a =0;
+				}	
+				else if(man.state == 2){
+					ctx.drawImage(rightpic,b,0,man.width,man.height,man.x,man.y,man.width,man.height);
+					b +=50;
+					if(b >= 200) b =0;
+				}
+				ctx.drawImage(toppic,0,0,canvas.width,40);
+				for(i = 0 ; i < 10 ; i++){
+					if(Array[i].mod == 0) ctx.drawImage(blockpic,Array[i].x, Array[i].y, Array[i].width, Array[i].height);
+					else if  (Array[i].mod == 1) ctx.drawImage(spic,Array[i].x, Array[i].y, Array[i].width, Array[i].height);
+					else if  (Array[i].mod == 2) ctx.drawImage(kpic,Array[i].x, Array[i].y, Array[i].width, Array[i].height);
+					else if  (Array[i].mod == 3) ctx.drawImage(jpic,Array[i].x, Array[i].y, Array[i].width, Array[i].height);
+					else{
+						ctx.fillStyle = Array[i].color;
+						ctx.fillRect(Array[i].x, Array[i].y, Array[i].width, Array[i].height);
+					}	
+				}
+				stair ++;
+			}else if(game ==2 && end ==0 && start == 0){
+				ctx.drawImage(bgpic,0,0,canvas.width,canvas.height);
+				if(man.state == 0 ) ctx.drawImage(stand,man.x,man.y,man.width,man.height);
+				else if(man.state == 1){
+					ctx.drawImage(leftpic,a,0,man.width,man.height,man.x,man.y,man.width,man.height);
+					a+=50;
+					if(a >= 200) a =0;
+				}	
+				else if(man.state == 2){
+					ctx.drawImage(rightpic,b,0,man.width,man.height,man.x,man.y,man.width,man.height);
+					b +=50;
+					if(b >= 200) b =0;
+				}
+				if(man2.state == 0 ) ctx.drawImage(stand2,man2.x,man2.y,man2.width,man2.height);
+				else if(man2.state == 1){
+					ctx.drawImage(leftpic2,ddd,0,man2.width,man2.height,man2.x,man2.y,man2.width,man2.height);
+					ddd+=50;
+					if(ddd >= 200) ddd =0;
+				}	
+				else if(man2.state == 2){
+					ctx.drawImage(rightpic2,eee,0,man2.width,man2.height,man2.x,man2.y,man2.width,man2.height);
+					eee +=50;
+					if(eee >= 200) eee =0;
+				}
+				ctx.drawImage(toppic,0,0,canvas.width,40);
+				for(i = 0 ; i < 10 ; i++){
+					if(Array[i].mod == 0) ctx.drawImage(blockpic,Array[i].x, Array[i].y, Array[i].width, Array[i].height);
+					else if  (Array[i].mod == 1) ctx.drawImage(spic,Array[i].x, Array[i].y, Array[i].width, Array[i].height);
+					else if  (Array[i].mod == 2) ctx.drawImage(kpic,Array[i].x, Array[i].y, Array[i].width, Array[i].height);
+					else if  (Array[i].mod == 3) ctx.drawImage(jpic,Array[i].x, Array[i].y, Array[i].width, Array[i].height);
+					else{
+						ctx.fillStyle = Array[i].color;
+						ctx.fillRect(Array[i].x, Array[i].y, Array[i].width, Array[i].height);
+					}	
+				}
+				stair ++;
+			}else if( (game==0) && (end == 1) ){
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				var grd=ctx.createLinearGradient(240,0,240,640);
+				grd.addColorStop(0,"#eff2f7");
+				grd.addColorStop(1,"#052459");
+				ctx.fillStyle=grd;
+				ctx.fillRect(0,0,canvas.width,canvas.height);
+				ctx.font = "60px Verdana";
+				ctx.fillStyle = "#FFA500";
+				ctx.fillText("Game Over", 70, 100);
+				ctx.lineWidth = 3;
+				ctx.strokeStyle = "#8A0808";
+				ctx.strokeText("Game Over", 70, 100);
+				man.life = 0;
+				ctx.drawImage(QQpic,100, 200, 280,280);
+				ctx.fillStyle = "#FFA500";
+				ctx.fillRect(140,520,200,50);
+				ctx.lineWidth = 4;
+				ctx.strokeStyle = "#8A0808";
+				ctx.strokeRect(140,520,200,50);
+				ctx.font = "40px Verdana";
+				ctx.fillStyle = "#FFA500";
+				ctx.fillText("restart", 170, 560);
+				ctx.lineWidth = 2;
+				ctx.strokeStyle = "#8A0808";
+				ctx.strokeText("restart", 170, 560);
+			}else if( (game==2) && (end == 1)){
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				man.life = 12;
+				man2.life = 12;
+				var grd=ctx.createLinearGradient(240,0,240,640);
+				grd.addColorStop(0,"#eff2f7");
+				grd.addColorStop(1,"#052459");
+				ctx.fillStyle=grd;
+				ctx.fillRect(0,0,canvas.width,canvas.height);
+				if(win == 2 ) {
+					ctx.font = "60px Verdana";
+					ctx.fillStyle = "#FFA500";
+					ctx.fillText("PLAYER2 WIN! ",  20, 100);
+					ctx.lineWidth = 3;
+					ctx.strokeStyle = "#8A0808";
+					ctx.strokeText("PLAYER2 WIN! ",20, 100);
+					ctx.drawImage(QQpic,10, 250, 230,230);
+					ctx.drawImage(ww,200, 200, 280,280);
+					ctx.fillStyle = "#FFA500";
+					ctx.fillRect(140,520,200,50);
+					ctx.lineWidth = 4;
+					ctx.strokeStyle = "#8A0808";
+					ctx.strokeRect(140,520,200,50);
+					ctx.font = "40px Verdana";
+					ctx.fillStyle = "#FFA500";
+					ctx.fillText("restart", 170, 560);
+					ctx.lineWidth = 2;
+					ctx.strokeStyle = "#8A0808";
+					ctx.strokeText("restart", 170, 560);
+				} else if (win == 1 ){
+					ctx.font = "60px Verdana";
+					ctx.fillStyle = "#FFA500";
+					ctx.fillText("PLAYER1 WIN! ", 20, 100);
+					ctx.lineWidth = 3;
+					ctx.strokeStyle = "#8A0808";
+					ctx.strokeText("PLAYER1 WIN! ",20, 100);
+					ctx.drawImage(QQpic,250, 250, 230,230);
+					ctx.drawImage(ww,0, 200, 280,280);
+					ctx.fillStyle = "#FFA500";
+					ctx.fillRect(140,520,200,50);
+					ctx.lineWidth = 4;
+					ctx.strokeStyle = "#8A0808";
+					ctx.strokeRect(140,520,200,50);
+					ctx.font = "40px Verdana";
+					ctx.fillStyle = "#FFA500";
+					ctx.fillText("restart", 170, 560);
+					ctx.lineWidth = 2;
+					ctx.strokeStyle = "#8A0808";
+					ctx.strokeText("restart", 170, 560);
+				}
+			}else if( (game==0) && (start == 1) ){
+				var grd=ctx.createLinearGradient(240,0,240,640);
+				grd.addColorStop(0,"#eff2f7");
+				grd.addColorStop(1,"#052459");
+				ctx.fillStyle=grd;
+				ctx.fillRect(0,0,canvas.width,canvas.height);
+				ctx.font = "70px  Verdana";
+				ctx.fillStyle = "#FFA500";
+				ctx.fillText("NS-SHAFT", 65, 150);
+				ctx.lineWidth = 3;
+				ctx.strokeStyle = "#8A0808";
+				ctx.strokeText("NS-SHAFT", 60, 150);
+				ctx.drawImage(pic,110,200,250,250);
+				
+				ctx.fillStyle = "#FFA500";
+				ctx.fillRect(65,500,150,50);
+				ctx.lineWidth = 4;
+				ctx.strokeStyle = "#8A0808";
+				ctx.strokeRect(65,500,150,50);
+				ctx.font = "30px Verdana";
+				ctx.fillStyle = "#FFA500";
+				ctx.fillText("keyboard", 70, 535);
+				ctx.lineWidth = 1.5;
+				ctx.strokeStyle = "#8A0808";
+				ctx.strokeText("keyboard", 70, 535);
+				
+				ctx.fillStyle = "#FFA500";
+				ctx.fillRect(280,500,150,50);
+				ctx.lineWidth = 4;
+				ctx.strokeStyle = "#8A0808";
+				ctx.strokeRect(280,500,150,50);
+				ctx.font = "30px Verdana";
+				ctx.fillStyle = "#FFA500";
+				ctx.fillText("mouse", 305, 535);
+				ctx.lineWidth = 1.5;
+				ctx.strokeStyle = "#8A0808";
+				ctx.strokeText("mouse", 305, 535);
+				r=0;
+				ctx.fillStyle = "#FFA500";
+				ctx.fillRect(140,600,200,50);
+				ctx.lineWidth = 4;
+				ctx.strokeStyle = "#8A0808";
+				ctx.strokeRect(140,600,200,50);
+				ctx.font = "40px Verdana";
+				ctx.fillStyle = "#FFA500";
+				ctx.fillText("2 player", 160, 640);
+				ctx.lineWidth = 2;
+				ctx.strokeStyle = "#8A0808";
+				ctx.strokeText("2 player", 160, 640);
+			}else if( (game==0 || game == 2) && (start == 2) ){
+				var grd=ctx.createLinearGradient(240,0,240,640);
+				grd.addColorStop(0,"#eff2f7");
+				grd.addColorStop(1,"#052459");
+				ctx.fillStyle=grd;
+				ctx.fillRect(0,0,canvas.width,canvas.height);
+				c+=0.5;
+				if(mouse == 1) ctx.drawImage(st2,65, 200, 350, 150);
+				else if(game == 2) ctx.drawImage(st3,65, 200, 350, 150);
+				else ctx.drawImage(st,65, 200, 350, 150);
+				if(r <= 20) r+=1;
+				if(r > 20) r = 0;
+				ctx.beginPath();
+				ctx.fillStyle = "#c82124";
+				ctx.arc(120,400,r,0,2*Math.PI);
+				ctx.fill();
+				ctx.beginPath();
+				ctx.fillStyle = "#f77a40";
+				ctx.arc(180,400,r,0,2*Math.PI);
+				ctx.fill();
+				ctx.beginPath();
+				ctx.fillStyle = "#f7f71e";
+				ctx.arc(240,400,r,0,2*Math.PI);
+				ctx.fill();
+				ctx.beginPath();
+				ctx.fillStyle = "#1ef725";
+				ctx.arc(300,400,r,0,2*Math.PI);
+				ctx.fill();
+				ctx.beginPath();
+				ctx.arc(360,400,r,0,2*Math.PI);
+				ctx.fillStyle = "#1eccf7"; 
+				ctx.fill();
+				if(c > 35&& game == 0) {
+					start = 0;
+					game = 1;
+					 r = 0;
+					 c = 0;
+				}else if(c > 35&& game == 2){
+					start = 0;
+					 r = 0;
+					 c = 0;
+				}
+			}
+			if(game == 2){
+				man.stair = Math.floor(stair/70);
+				ctx2.clearRect(0, 0,canvas2.width,canvas2.height);
+				ctx2.font = "50px Verdana";
+				ctx2.fillStyle = "#F7A619";
+				ctx2.fillText("P1 LIFE = " + man.life, 30, 80);
+				ctx2.lineWidth = 2;
+				ctx2.strokeStyle = "#0EA418";
+				ctx2.strokeText("P1 LIFE = " + man.life, 30, 80);
+				ctx2.font = "50px Verdana";
+				ctx2.fillStyle = "#F7A619";
+				ctx2.fillText("P2 LIFE = " + man2.life, 30, 150);
+				ctx2.lineWidth = 2;
+				ctx2.strokeStyle = "#0EA418";
+				ctx2.strokeText("P2 LIFE = " + man2.life, 30, 150);			
+				
+			}
+			else{ 
+			man.stair = Math.floor(stair/70);
+			ctx2.clearRect(0, 0,canvas2.width,canvas2.height);
+			ctx2.font = "60px Verdana";
+			ctx2.fillStyle = "#F7A619";
+			ctx2.fillText("LIFE = " + man.life, 30, 80);
+			ctx2.lineWidth = 2;
+			ctx2.strokeStyle = "#0EA418";
+			ctx2.strokeText("LIFE = " + man.life, 30, 80);
+			ctx2.font = "60px Verdana";
+			ctx2.fillStyle = "#F7A619";
+			ctx2.fillText("STAIR = " + man.stair, 30, 150);
+			ctx2.lineWidth = 2;
+			ctx2.strokeStyle = "#0EA418";
+			ctx2.strokeText("STAIR = " + man.stair, 30, 150);
+			if(localStorage.getItem('rec') < man.stair && end == 1) localStorage['rec'] = man.stair;
+			ctx2.font = "60px Verdana";
+			ctx2.fillStyle = "#F7A619";
+			if( localStorage.getItem('rec') == null) ctx2.fillText("RECORD = 0" , 30, 220);
+			else ctx2.fillText("RECORD =" + localStorage.getItem('rec'), 30, 220);
+			ctx2.lineWidth = 2;
+			ctx2.strokeStyle = "#0EA418";
+			if( localStorage.getItem('rec') == null) ctx2.strokeText("RECORD = 0" , 30, 220);
+			else ctx2.strokeText("RECORD =" + localStorage.getItem('rec'), 30, 220);
+			}
+		}  
+		function run() {
+			update((Date.now() - time) / 1000);
+			render();
+			time = Date.now();
+		}
+		var time = Date.now();
+		setInterval(run, 40);
+	</script>
+
+</body>
+</html>
+<style type="text/css">
+               #ss {  
+    					left:10px;top:10px;position:fixed;z-index:1;
+    					border: 1px solid black; 
+						touch-action: none;}
+               #gg {  
+                        left:520px;top:10px;position:fixed;z-index:1;
+    					border: 4px solid blue; }	
+				#aa{
+						left:520px;top:350px;position:fixed;z-index:1;
+    					 }
+				#bb{
+						left:520px;top:380px;position:fixed;z-index:1;
+    					 }			
+
+</style>
